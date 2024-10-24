@@ -23,6 +23,8 @@ let messages = [];
 
 let today = new Date();
 
+let day = ['일','월','화','수','목','금','토'];
+
 let todayFormat =
   today.getFullYear() +
   "년 " +
@@ -30,6 +32,8 @@ let todayFormat =
   "월 " +
   today.getDate() +
   "일 " +
+  day[today.getDay()] +
+  "요일"
   today.getHours() +
   "시 " +
   today.getMinutes() +
