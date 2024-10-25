@@ -23,7 +23,7 @@ let messages = [];
 
 let today = new Date();
 
-let day = ['일','월','화','수','목','금','토'];
+let day = ["일", "월", "화", "수", "목", "금", "토"];
 
 let todayFormat =
   today.getFullYear() +
@@ -33,7 +33,7 @@ let todayFormat =
   today.getDate() +
   "일 " +
   day[today.getDay()] +
-  "요일"
+  "요일";
   today.getHours() +
   "시 " +
   today.getMinutes() +
@@ -41,10 +41,15 @@ let todayFormat =
   today.getSeconds() +
   "초";
 
+
+  // 메세지 포맷
+
+
 io.on("connection", (socket) => {
-  io.emit("SEND_MESSAGE", { // 새로운 사용자 입장 메세지
+  socket.broadcast.emit("SEND_MESSAGE", {
+    // 새로운 사용자 입장 메세지
     id: `${socket.id} - ${Math.random()}`, //"-"는 그냥 구분하기위한 선
-    content: `${socket.id}이 입장했습니다.`,
+    content: `${socket.id}님이 입장했습니다.`,
     sender: socket.id,
     timestamp: todayFormat,
   });
@@ -53,7 +58,6 @@ io.on("connection", (socket) => {
   // 메세지 송수신 구현, 메시지 객체는 id, content, timestamp 필드를 포함해야 합니다
   socket.on("SEND_MESSAGE", (msg) => {
     console.log(`${msg}입니다`);
-    // const parseMessage = JSON.parse(msg); // 문자열을 객체로 변환
 
     const message = {
       id: `${socket.id} - ${Math.random()}`, //"-"는 그냥 구분하기위한 선
@@ -62,15 +66,26 @@ io.on("connection", (socket) => {
       timestamp: todayFormat,
     };
 
-    // 메시지를 전송할 때마다 서버에 메시지를 저장하세요.
-    messages.push(message); // 배열에 저장
+    messages.push(message); // 배열에 메세지 저장
     io.emit("SEND_MESSAGE", JSON.stringify(message)); // 객체를 문자열로 변환한 메시지를 클라이언트에게 발송
     console.log(messages);
   });
 
-  socket.on("disconnect", () => {
-    console.log("사용자가 연결을 끊었습니다", socket.id);
-  });
+  socket.on('SEND_MESSAGE', ({ room, message }) => {
+    console.log('SEND_MESSAGE', room, message);
+});
+
+socket.on('JOIN_ROOM', (room) => {
+    console.log('JOIN_ROOM', room);
+})
+
+socket.on('LEAVE_ROOM', (room) => {
+    console.log('LEAVE_ROOM', room);
+});
+
+socket.on('disconnect', () => {
+    console.log('사용자가 연결을 끊었습니다');
+});
 });
 
 // GET /messages 엔드포인트를 추가하여, 서버에 저장된 모든 채팅 기록을 반환하세요
