@@ -77,41 +77,21 @@ io.on("connection", (socket) => {
   });
   console.log("사용자가 연결되었습니다", socket.id);
 
-  // 메세지 송수신 구현, 메시지 객체는 id, content, timestamp 필드를 포함해야 합니다
-  socket.on("SEND_MESSAGE", (msg) => {
-    console.log(`${msg}입니다`);
-    // const parseMessage = JSON.parse(msg); // 문자열을 객체로 변환
-    socket.nickname = nickname();
-
-    const message = {
-      id: `${socket.id} - ${Math.random()}`, //"-"는 그냥 구분하기위한 선
-      content: msg,
-      sender: socket.nickname,
-      timestamp: todayFormat, // 원래는 new Date()였음
-    };
-
-    // 메시지를 전송할 때마다 서버에 메시지를 저장하세요.
-    messages.push(message); // 배열에 저장
-    io.emit("SEND_MESSAGE", JSON.stringify(message)); // 객체를 문자열로 변환한 메시지를 클라이언트에게 발송
-    console.log(messages);
-  });
-
   // 룸 메세지 전송
   socket.on("SEND_MESSAGE", ({ room, message }) => {
     console.log("SEND_MESSAGE", room, message);
-
     socket.nickname = nickname();
 
     io.to(room).emit("SEND_MESSAGE", {
       id: `${socket.id}-${Math.random()}`,
       content: message,
-      sender: socket.nicknameid,
+      sender: socket.nickname,
       timestamp: todayFormat,
     });
 
     messages.push(message); // 배열에 메세지 저장
     io.to(room).emit("SEND_MESSAGE", JSON.stringify(message)); // 객체를 문자열로 변환한 메시지를 클라이언트에게 발송
-    console.log(`${message}입니다`);
+    console.log(messages)
   });
 
   // 룸 입장 알림
@@ -127,13 +107,13 @@ io.on("connection", (socket) => {
       sender: socket.nickname,
       timestamp: todayFormat, // 원래는 new Date()였음
     };
-    console.log(`${message}입니다`);
+    // console.log(`${message}입니다`);
 
     io.to(room).emit("SEND_MESSAGE", JSON.stringify(message));
     console.log("JOIN_ROOM", room);
   });
 
-  // 사용자가 채팅방을 떠날 때 호출됩니다
+  //사용자가 채팅방을 떠날 때 호출됩니다
   socket.on("LEAVE_ROOM", (room) => {
     socket.leave(room);
     console.log(`${socket.id}님이 ${room} 방을 떠났습니다.`);
@@ -151,7 +131,18 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("사용자가 연결을 끊었습니다", socket.id);
+    
   });
+
+  // leave room과 deisconnect 를 주석처리해서 실행해본 결과
+  // 연결이 끊기는 것인지 하얀 페이지로 넘어가는 것인지 정확하게 모르겠음 연결은 안 끊기는 것으로 추정
+  // 이렇게 돼서 물어본 결과 클라이언트 수정을 해야 될 것 같다. 베이직반 튜터님께 다시 여쭤 보는걸 추천
+
+  // 일단 이렇게 에러문구가 나오지 않고 문제가 생기는 경우 어떻게 문제를 찾는지 궁금.
+
+  // 에러가 어디서 난건지 구분할 줄 알아야됨
+  // 지금과 같이 서버의 문제는 아니고 브라우저에서 이게 뭔데? 하고 에러를 발생시킨거기 때문에 개발자 도구를 확인했을 때 에러를 확인 할 수 있다
+  // 샌드 메세지 이벤트가 중복이 되어 에러가 발생 했다고 볼수있다
 });
 
 // GET /messages 엔드포인트를 추가하여, 서버에 저장된 모든 채팅 기록을 반환하세요
